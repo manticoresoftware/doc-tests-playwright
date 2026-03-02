@@ -1,0 +1,19 @@
+{
+  "name": "doc-tests-playwright",
+  "version": "1.0.0",
+  "description": "Playwright UI tests for Manticore Search documentation website",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "test:docker": "docker compose run --rm playwright",
+    "report": "npx playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "typescript": "^5.9.3"
+  }
+}

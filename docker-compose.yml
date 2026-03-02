@@ -1,0 +1,12 @@
+services:
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.58.2-noble
+    init: true
+    ipc: host
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+      - /app/node_modules
+    entrypoint: sh -c "npm ci && npx playwright test"

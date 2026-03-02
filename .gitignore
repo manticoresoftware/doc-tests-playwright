@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.last-run.json
+
+# TypeScript
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

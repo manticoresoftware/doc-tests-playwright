@@ -1,0 +1,52 @@
+name: Playwright UI Tests
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  playwright-tests:
+    name: Run Playwright Tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      options: --user 1001
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Playwright tests (attempt 1)
+        id: test-run-1
+        continue-on-error: true
+        run: npx playwright test
+
+      - name: Retry failed tests (attempt 2)
+        id: test-run-2
+        if: steps.test-run-1.outcome == 'failure'
+        run: npx playwright test --last-failed
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-attempt-${{ github.run_attempt }}
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-attempt-${{ github.run_attempt }}
+          path: test-results/
+          retention-days: 14
