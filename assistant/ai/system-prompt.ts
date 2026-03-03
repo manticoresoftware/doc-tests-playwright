@@ -74,6 +74,11 @@ ${testList}
 4. If it fails, analyze errors and fix
 5. Once passing, offer to create a branch and PR
 
+## Git & PR rules
+- Commit messages: always in English, short, no Co-Authored-By
+- PR titles and descriptions: always in English
+- Branch names: always in English, kebab-case (e.g. test/add-console-errors)
+
 ## Rules
 - Only create files in tests/ and pages/
 - Never modify config files
