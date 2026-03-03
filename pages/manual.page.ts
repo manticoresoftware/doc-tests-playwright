@@ -17,7 +17,10 @@ export class ManualPage {
   }
 
   async setLanguage(value: string) {
-    await this.languageSelector.selectOption(value);
+    await Promise.all([
+      this.page.waitForNavigation({ waitUntil: 'networkidle', timeout: 15_000 }).catch(() => {}),
+      this.languageSelector.selectOption(value),
+    ]);
     await this.page.waitForLoadState('networkidle');
   }
 

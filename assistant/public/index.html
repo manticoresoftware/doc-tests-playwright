@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manticore Test Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link id="hljs-theme" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/typescript.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h2>Test Assistant</h2>
+        <button id="btn-theme" class="theme-toggle" title="Toggle theme">&#9790;</button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Git</h3>
+        <div id="git-status" class="git-status">Loading...</div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Tests</h3>
+        <div class="sidebar-actions">
+          <button id="btn-run-all" class="btn btn-primary btn-sm">Run All</button>
+          <button id="btn-refresh" class="btn btn-secondary btn-sm">Refresh</button>
+        </div>
+        <div id="test-list" class="test-list">Loading...</div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Quick Actions</h3>
+        <button class="btn btn-secondary btn-block quick-action" data-prompt="List all tests with their descriptions">List tests</button>
+        <button class="btn btn-secondary btn-block quick-action" data-prompt="Show git status and current branch">Git status</button>
+        <button class="btn btn-secondary btn-block quick-action" data-prompt="What pages of the documentation are not covered by tests yet?">Coverage gaps</button>
+      </div>
+    </aside>
+
+    <!-- Main chat area -->
+    <main class="chat-area">
+      <div id="chat-messages" class="chat-messages">
+        <div class="message assistant-msg">
+          <div class="message-content">
+            <p>Hi! I'm your Playwright test assistant for Manticore docs. I can:</p>
+            <ul>
+              <li>Create new tests for any documentation page</li>
+              <li>Run existing tests and analyze results</li>
+              <li>Fix failing tests</li>
+              <li>Create PRs with your changes</li>
+            </ul>
+            <p>What would you like to do?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test run output panel -->
+      <div id="test-output" class="test-output hidden">
+        <div class="test-output-header">
+          <span>Test Output</span>
+          <button id="btn-close-output" class="btn-close">&times;</button>
+        </div>
+        <div id="test-output-content"></div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea id="chat-input" placeholder="Ask me to create a test, run tests, or create a PR..." rows="1"></textarea>
+        <button id="btn-send" class="btn btn-primary">Send</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

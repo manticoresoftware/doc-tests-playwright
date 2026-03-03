@@ -72,6 +72,57 @@ Tests the OS tab switching on the [Installation](https://manual.manticoresearch.
 | `switch to Kubernetes` | Kubernetes tab shows `helm` commands |
 | `switching tabs changes content and restores` | RHEL → Docker → RHEL: content changes and restores |
 
+### `navigation.spec.ts` — Sidebar navigation
+Checks that the sidebar contains expected sections and links work correctly.
+
+| Test | What it verifies |
+|---|---|
+| `sidebar contains expected sections` | Page body contains Introduction, Installation, Quick start guide, Searching |
+| `clicking sidebar link navigates to correct page` | Clicking "Quick start guide" navigates to `/Quick_start_guide` |
+| `page heading matches page content` | Quick Start page contains "quick start" text |
+| `page title reflects current page` | Browser tab title contains "quick start" |
+
+### `anchors.spec.ts` — Page anchors and deep linking
+Verifies that anchor links point to existing elements and deep linking works.
+
+| Test | What it verifies |
+|---|---|
+| `anchor links on Quick Start page point to existing elements` | All `#` anchor links have valid targets on the page |
+| `headings have named anchors for deep linking` | Page has `<a class="anchor" name="...">` elements for section linking |
+
+### `copy-button.spec.ts` — Code block copy button
+Tests the clipboard copy button on code examples.
+
+| Test | What it verifies |
+|---|---|
+| `code blocks have a copy button` | Code examples have visible `.copy-btn` buttons |
+| `copy button responds to click` | Clicking a copy button doesn't throw an error |
+
+### `broken-links.spec.ts` — Link integrity
+Checks that links on the page return valid HTTP responses.
+
+| Test | What it verifies |
+|---|---|
+| `sidebar navigation links return 200` | All sidebar links return HTTP 200 |
+| `main page external links are reachable` | External links return HTTP status < 400 |
+
+### `page-404.spec.ts` — 404 error handling
+Tests behavior when navigating to a non-existent page.
+
+| Test | What it verifies |
+|---|---|
+| `non-existent page redirects or shows error` | Non-existent URL returns status < 500 (no server error) |
+| `non-existent page still has working navigation` | Page still has links and meaningful content |
+
+### `mobile-viewport.spec.ts` — Mobile responsiveness
+Tests the documentation on an iPhone 12 viewport (390×844).
+
+| Test | What it verifies |
+|---|---|
+| `page loads on mobile viewport` | Title is non-empty, H1 is visible |
+| `content is readable without horizontal scroll` | Body width ≤ viewport width |
+| `code blocks are visible on mobile` | Code examples are rendered on small screens |
+
 ---
 
 ## How to run tests
@@ -127,7 +178,7 @@ npx playwright codegen manual.manticoresearch.com
 ### When tests pass
 
 ```
-  19 passed (33.6s)
+  34 passed (50.1s)
 ```
 
 ### When tests fail
@@ -190,22 +241,28 @@ npm run test:ui
 
 ```
 doc-tests-playwright/
-├── tests/                        # Test files
-│   ├── basic-connection.spec.ts  # Smoke test
-│   ├── search.spec.ts            # Search functionality
-│   ├── code-tabs.spec.ts         # SQL/HTTP/PHP/Python tabs
-│   ├── language-switcher.spec.ts # EN/RU/ZH switching
-│   └── os-tabs.spec.ts           # OS installation tabs
-├── pages/                        # Page Object Models
-│   ├── manual.page.ts            # Common page elements (language selector, heading)
-│   └── code-tabs.page.ts         # Tab block logic (code tabs + OS tabs)
-├── playwright.config.ts          # Playwright configuration
-├── docker-compose.yml            # Docker setup for local runs
-├── Dockerfile                    # Docker image for tests
-├── package.json                  # Dependencies and scripts
-├── tsconfig.json                 # TypeScript configuration
+├── tests/                            # Test files (34 tests)
+│   ├── basic-connection.spec.ts      # Smoke test
+│   ├── search.spec.ts                # Search functionality
+│   ├── code-tabs.spec.ts             # SQL/HTTP/PHP/Python tabs
+│   ├── language-switcher.spec.ts     # EN/RU/ZH switching
+│   ├── os-tabs.spec.ts               # OS installation tabs
+│   ├── navigation.spec.ts            # Sidebar navigation
+│   ├── anchors.spec.ts               # Page anchors and deep linking
+│   ├── copy-button.spec.ts           # Code block copy button
+│   ├── broken-links.spec.ts          # Link integrity
+│   ├── page-404.spec.ts              # 404 error handling
+│   └── mobile-viewport.spec.ts       # Mobile responsiveness
+├── pages/                            # Page Object Models
+│   ├── manual.page.ts                # Common page elements (language selector, heading)
+│   └── code-tabs.page.ts             # Tab block logic (code tabs + OS tabs)
+├── playwright.config.ts              # Playwright configuration
+├── docker-compose.yml                # Docker setup for local runs
+├── Dockerfile                        # Docker image for tests
+├── package.json                      # Dependencies and scripts
+├── tsconfig.json                     # TypeScript configuration
 └── .github/
-    ├── workflows/playwright.yml  # CI pipeline
+    ├── workflows/playwright.yml      # CI pipeline
     └── FUNDING.yml
 ```
 
