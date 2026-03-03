@@ -324,7 +324,8 @@ btnCloseOutput.addEventListener('click', () => {
 
 async function runTestsInPanel(file, grep) {
   testOutput.classList.remove('hidden');
-  testOutputContent.textContent = 'Starting tests...\n';
+  testOutputContent.innerHTML = '<div class="test-running"><span class="spinner"></span> Running tests...</div>';
+  btnRunAll.disabled = true;
 
   try {
     const res = await fetch(`${API_BASE}/api/tests/run`, {
@@ -333,38 +334,95 @@ async function runTestsInPanel(file, grep) {
       body: JSON.stringify({ file, grep }),
     });
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        try {
-          const event = JSON.parse(line.slice(6));
-          if (event.type === 'output') {
-            testOutputContent.textContent += event.content;
-          } else if (event.type === 'done') {
-            testOutputContent.textContent += `\n--- Exit code: ${event.code} ---`;
-          }
-          testOutputContent.scrollTop = testOutputContent.scrollHeight;
-        } catch {
-          // skip
-        }
-      }
-    }
+    const data = await res.json();
+    renderTestResults(data);
   } catch (err) {
-    testOutputContent.textContent += `\nError: ${err.message}`;
+    testOutputContent.innerHTML = `<div style="color:var(--error);padding:12px">Error: ${escapeHtml(err.message)}</div>`;
   }
 
+  btnRunAll.disabled = false;
   loadTests();
+}
+
+function renderTestResults(data) {
+  if (data.raw) {
+    // Fallback: raw output
+    testOutputContent.innerHTML = `<pre style="padding:12px;margin:0">${escapeHtml(data.raw)}</pre>`;
+    return;
+  }
+
+  const duration = (data.duration / 1000).toFixed(1);
+
+  // Summary bar
+  let summaryClass = data.failed > 0 ? 'test-summary-fail' : 'test-summary-pass';
+  let summaryHtml = `
+    <div class="test-summary ${summaryClass}">
+      <span class="test-summary-counts">
+        ${data.passed > 0 ? `<span class="test-count-pass">${data.passed} passed</span>` : ''}
+        ${data.failed > 0 ? `<span class="test-count-fail">${data.failed} failed</span>` : ''}
+        ${data.skipped > 0 ? `<span class="test-count-skip">${data.skipped} skipped</span>` : ''}
+      </span>
+      <span class="test-summary-meta">${data.total} tests &middot; ${duration}s</span>
+    </div>
+  `;
+
+  // Group tests by file
+  const groups = {};
+  for (const t of data.tests) {
+    const key = t.file || 'unknown';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  }
+
+  let testsHtml = '';
+  for (const [file, tests] of Object.entries(groups)) {
+    const fileName = file.replace(/^tests\//, '');
+    const groupPassed = tests.filter(t => t.status === 'passed').length;
+    const groupFailed = tests.filter(t => t.status === 'failed').length;
+    const groupIcon = groupFailed > 0 ? '&#10007;' : '&#10003;';
+    const groupClass = groupFailed > 0 ? 'test-group-fail' : 'test-group-pass';
+
+    testsHtml += `
+      <div class="test-group">
+        <div class="test-group-header ${groupClass}" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="test-group-icon">${groupIcon}</span>
+          <span class="test-group-name">${escapeHtml(fileName)}</span>
+          <span class="test-group-counts">${groupPassed}/${tests.length}</span>
+        </div>
+        <div class="test-group-items">
+          ${tests.map(t => renderSingleTest(t)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  testOutputContent.innerHTML = summaryHtml + '<div class="test-results-list">' + testsHtml + '</div>';
+
+  // Auto-expand failed groups
+  testOutputContent.querySelectorAll('.test-group-fail').forEach(el => {
+    el.parentElement.classList.add('expanded');
+  });
+}
+
+function renderSingleTest(t) {
+  const icon = t.status === 'passed' ? '&#10003;' : t.status === 'failed' ? '&#10007;' : '&#9679;';
+  const cls = t.status === 'passed' ? 'pass' : t.status === 'failed' ? 'fail' : 'skip';
+  const dur = t.duration ? `${(t.duration / 1000).toFixed(1)}s` : '';
+  const suitePart = t.suite ? `${escapeHtml(t.suite)} &rsaquo; ` : '';
+
+  let errorHtml = '';
+  if (t.error) {
+    errorHtml = `<div class="test-error">${escapeHtml(t.error)}</div>`;
+  }
+
+  return `
+    <div class="test-item test-item-${cls}" ${t.error ? 'onclick="this.querySelector(\'.test-error\').classList.toggle(\'open\')"' : ''}>
+      <span class="test-item-icon test-icon-${cls}">${icon}</span>
+      <span class="test-item-title">${suitePart}${escapeHtml(t.title)}</span>
+      <span class="test-item-dur">${dur}</span>
+      ${errorHtml}
+    </div>
+  `;
 }
 
 // --- Quick Actions ---
